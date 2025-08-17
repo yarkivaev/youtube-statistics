@@ -1,9 +1,9 @@
 """Services for YouTube Analytics."""
 
 from .youtube_api import YouTubeAPIClient
-from .analytics_service import YouTubeAnalyticsService
+from .youtube_repository import YouTubeRepository
 
 __all__ = [
     'YouTubeAPIClient',
-    'YouTubeAnalyticsService'
+    'YouTubeRepository'
 ]

@@ -1,13 +1,35 @@
 """Main entry point for YouTube Analytics application."""
 
 import datetime
-from services import YouTubeAPIClient, YouTubeAnalyticsService
+from youtube import YouTubeAPIClient, YouTubeRepository
+from models import DateRange
 from exporters import JsonExported, TextExported
-from exporters.factories import (
-    ChannelFactory, DateRangeFactory, SubscriptionMetricsFactory,
-    ViewsBreakdownFactory, GeographicMetricsFactory, DailyMetricsFactory,
-    RevenueMetricsFactory, AnalyticsReportFactory
+
+# Pure model factories
+from models.factories import (
+    ChannelFactory as BaseChannelFactory,
+    DateRangeFactory as BaseDateRangeFactory,
+    SubscriptionMetricsFactory as BaseSubscriptionFactory,
+    ViewsBreakdownFactory as BaseViewsFactory,
+    DailyMetricsFactory as BaseDailyMetricsFactory,
+    GeographicMetricsFactory as BaseGeographicFactory,
+    RevenueMetricsFactory as BaseRevenueFactory
 )
+
+# YouTube API decorators
+from youtube.factories import (
+    YouTubeChannelFactory,
+    YouTubeViewsFactory,
+    YouTubeDailyMetricsFactory,
+    YouTubeGeographicFactory,
+    YouTubeRevenueFactory
+)
+
+# Export decorators
+from exporters.factories.decorators.exported_factory_decorator import ExportedFactoryDecorator
+from exporters.factories.decorators.exported_list_factory_decorator import ExportedListFactoryDecorator
+
+# Exported classes
 from exporters.model_exporters import (
     ChannelExported, DateRangeExported, SubscriptionMetricsExported,
     ViewsBreakdownExported, GeographicMetricsExported, RevenueMetricsExported,
@@ -23,36 +45,75 @@ def main():
     start_date = '2024-01-01'
     end_date = datetime.date.today().isoformat()
     
-    # Configure factories with export decorators
-    # Create base factories
-    channel_factory = ChannelFactory(exported_class=ChannelExported)
-    date_range_factory = DateRangeFactory(exported_class=DateRangeExported)
+    # Initialize API client first
+    api_client = YouTubeAPIClient()
     
-    # Create factories with dependencies
-    subscription_factory = SubscriptionMetricsFactory(
-        date_range_factory=date_range_factory,
+    # Compose factories using decorator pattern
+    # Channel: Exported(YouTube(Base))
+    channel_factory = ExportedFactoryDecorator(
+        factory=YouTubeChannelFactory(
+            factory=BaseChannelFactory(),
+            api_client=api_client
+        ),
+        exported_class=ChannelExported
+    )
+    
+    # DateRange: Exported(Base) - no YouTube API needed
+    date_range_factory = ExportedFactoryDecorator(
+        factory=BaseDateRangeFactory(),
+        exported_class=DateRangeExported
+    )
+    
+    # SubscriptionMetrics: Exported(Base) - calculated from daily metrics
+    # Uses the date_range_factory for creating period
+    subscription_factory = ExportedFactoryDecorator(
+        factory=BaseSubscriptionFactory(
+            date_range_factory=date_range_factory
+        ),
         exported_class=SubscriptionMetricsExported
     )
     
-    views_breakdown_factory = ViewsBreakdownFactory(
+    # ViewsBreakdown: Exported(YouTube(Base))
+    views_breakdown_factory = ExportedFactoryDecorator(
+        factory=YouTubeViewsFactory(
+            factory=BaseViewsFactory(),
+            api_client=api_client
+        ),
         exported_class=ViewsBreakdownExported
     )
     
-    geographic_factory = GeographicMetricsFactory(
-        exported_class=GeographicMetricsExported
-    )
-    
-    daily_metrics_factory = DailyMetricsFactory(
+    # DailyMetrics: ExportedList(YouTube(Base)) - returns list
+    daily_metrics_factory = ExportedListFactoryDecorator(
+        factory=YouTubeDailyMetricsFactory(
+            api_client=api_client,
+            base_factory=BaseDailyMetricsFactory()
+        ),
         exported_class=DailyMetricsExported
     )
     
-    revenue_factory = RevenueMetricsFactory(
-        date_range_factory=date_range_factory,
+    # GeographicMetrics: ExportedList(YouTube(Base)) - returns list
+    geographic_factory = ExportedListFactoryDecorator(
+        factory=YouTubeGeographicFactory(
+            api_client=api_client,
+            base_factory=BaseGeographicFactory()
+        ),
+        exported_class=GeographicMetricsExported
+    )
+    
+    # RevenueMetrics: Exported(YouTube(Base))
+    revenue_factory = ExportedFactoryDecorator(
+        factory=YouTubeRevenueFactory(
+            factory=BaseRevenueFactory(
+                date_range_factory=date_range_factory
+            ),
+            api_client=api_client
+        ),
         exported_class=RevenueMetricsExported
     )
     
-    # Create main report factory with all dependencies
-    report_factory = AnalyticsReportFactory(
+    # Initialize repository with all individual factories
+    analytics_repo = YouTubeRepository(
+        api_client=api_client,
         channel_factory=channel_factory,
         date_range_factory=date_range_factory,
         subscription_factory=subscription_factory,
@@ -63,12 +124,12 @@ def main():
         exported_class=AnalyticsReportExported
     )
     
-    # Initialize API client and service with factory
-    api_client = YouTubeAPIClient()
-    analytics_service = YouTubeAnalyticsService(api_client, report_factory)
-    
-    # Fetch analytics report - will return pre-decorated report
-    report = analytics_service.fetch_analytics_report(start_date, end_date)
+    # Load analytics report using repository pattern
+    period = DateRange(
+        start_date=datetime.datetime.strptime(start_date, '%Y-%m-%d').date(),
+        end_date=datetime.datetime.strptime(end_date, '%Y-%m-%d').date()
+    )
+    report = analytics_repo.load(period)
     
     # Report already has export() method from factory
     # Export report to dictionary - just call it directly
