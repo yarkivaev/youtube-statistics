@@ -1,34 +1,33 @@
-"""YouTube API decorator for ViewsBreakdown factory."""
+"""YouTube API factory for ViewsBreakdown."""
 
-from typing import TYPE_CHECKING, Any, Optional
-from models.factories.base import FactoryDecorator, Factory
-from models.metrics import ContentType
+from typing import TYPE_CHECKING, Optional
+from models.factories.base import Factory
+from models import ViewsBreakdown
+from models.daily_metrics import ContentType
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient
 
 
-class YouTubeViewsFactory(FactoryDecorator):
-    """Decorator that adds YouTube API fetching to ViewsBreakdown factory."""
+class YouTubeViewsFactory(Factory):
+    """Factory that fetches views breakdown from YouTube API."""
     
-    def __init__(self, factory: Factory, api_client: 'YouTubeAPIClient'):
-        """Initialize with wrapped factory and API client.
+    def __init__(self, api_client: 'YouTubeAPIClient'):
+        """Initialize with API client.
         
         Args:
-            factory: The ViewsBreakdown factory to wrap
             api_client: YouTube API client for fetching data
         """
-        super().__init__(factory)
         self.api_client = api_client
     
     def create(self, 
                start_date: Optional[str] = None,
                end_date: Optional[str] = None,
-               **kwargs) -> Any:
+               **kwargs) -> ViewsBreakdown:
         """Create ViewsBreakdown, fetching from API if data not provided.
         
         If total_views is not in kwargs and dates are provided, fetches
-        views breakdown from YouTube API. Otherwise delegates to wrapped factory.
+        views breakdown from YouTube API. Otherwise creates ViewsBreakdown directly.
         
         Args:
             start_date: Start date for API query (ISO format)
@@ -38,13 +37,18 @@ class YouTubeViewsFactory(FactoryDecorator):
         Returns:
             ViewsBreakdown instance
         """
-        # If data already provided, just delegate
+        # If data already provided, create directly
         if 'total_views' in kwargs:
-            return self.factory.create(**kwargs)
+            return ViewsBreakdown(**kwargs)
         
         # Need dates to fetch from API
         if not start_date or not end_date:
-            return self.factory.create(**kwargs)
+            return ViewsBreakdown(
+                total_views=kwargs.get('total_views', 0),
+                video_views=kwargs.get('video_views', 0),
+                shorts_views=kwargs.get('shorts_views', 0),
+                live_stream_views=kwargs.get('live_stream_views', 0)
+            )
         
         # Fetch from YouTube Analytics API
         youtube_analytics = self.api_client.get_analytics_service()
@@ -90,5 +94,5 @@ class YouTubeViewsFactory(FactoryDecorator):
             kwargs['shorts_views'] = 0
             kwargs['live_stream_views'] = 0
         
-        # Delegate to wrapped factory with fetched data
-        return self.factory.create(**kwargs)
+        # Create ViewsBreakdown with fetched data
+        return ViewsBreakdown(**kwargs)

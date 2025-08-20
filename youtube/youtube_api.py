@@ -75,17 +75,20 @@ class YouTubeAPIClient:
         _, data = self.get_services()
         return data
     
-    def execute_request(self, request: Any) -> Optional[dict]:
+    def execute_request(self, request: Any) -> dict:
         """Execute API request with error handling.
         
         Args:
             request: API request object
             
         Returns:
-            Response dict or None if error
+            Response dict
+            
+        Raises:
+            Exception: If API request fails
         """
         try:
             return request.execute()
         except Exception as e:
             print(f"API request failed: {e}")
-            return None
+            raise

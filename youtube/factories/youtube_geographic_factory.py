@@ -1,6 +1,6 @@
 """YouTube API factory for GeographicMetrics."""
 
-from typing import TYPE_CHECKING, Optional, List
+from typing import TYPE_CHECKING, List
 from models.factories.base import Factory
 from models import GeographicMetrics
 
@@ -14,15 +14,13 @@ class YouTubeGeographicFactory(Factory):
     Returns a list of GeographicMetrics instances.
     """
     
-    def __init__(self, api_client: 'YouTubeAPIClient', base_factory: Factory):
-        """Initialize with API client and base factory.
+    def __init__(self, api_client: 'YouTubeAPIClient'):
+        """Initialize with API client.
         
         Args:
             api_client: YouTube API client for fetching data
-            base_factory: Base GeographicMetrics factory for creating instances
         """
         self.api_client = api_client
-        self.base_factory = base_factory
     
     def create(self,
                fetch_type: str,
@@ -58,10 +56,11 @@ class YouTubeGeographicFactory(Factory):
                 
                 if response and response.get('rows'):
                     for row in response['rows']:
-                        geo = self.base_factory.create(
+                        geo = GeographicMetrics(
                             country_code=row[0],
                             views=row[1],
-                            watch_time_minutes=row[2]
+                            watch_time_minutes=row[2],
+                            subscribers_gained=0  # Default value for views fetch
                         )
                         geo_metrics.append(geo)
                         
@@ -79,8 +78,10 @@ class YouTubeGeographicFactory(Factory):
                 
                 if response and response.get('rows'):
                     for row in response['rows']:
-                        geo = self.base_factory.create(
+                        geo = GeographicMetrics(
                             country_code=row[0],
+                            views=0,  # Default value for subscribers fetch
+                            watch_time_minutes=0,  # Default value for subscribers fetch
                             subscribers_gained=row[1]
                         )
                         geo_metrics.append(geo)

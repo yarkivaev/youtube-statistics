@@ -1,6 +1,6 @@
-"""YouTube API decorator for DailyMetrics factory."""
+"""YouTube API factory for DailyMetrics."""
 
-from typing import TYPE_CHECKING, Any, Optional, List
+from typing import TYPE_CHECKING, Optional, List
 from datetime import datetime
 from models.factories.base import Factory
 from models import DailyMetrics
@@ -12,19 +12,16 @@ if TYPE_CHECKING:
 class YouTubeDailyMetricsFactory(Factory):
     """Factory that fetches daily metrics from YouTube API.
     
-    This is not a decorator because it returns a list of DailyMetrics
-    rather than a single instance.
+    Returns a list of DailyMetrics instances.
     """
     
-    def __init__(self, api_client: 'YouTubeAPIClient', base_factory: Factory):
-        """Initialize with API client and base factory.
+    def __init__(self, api_client: 'YouTubeAPIClient'):
+        """Initialize with API client.
         
         Args:
             api_client: YouTube API client for fetching data
-            base_factory: Base DailyMetrics factory for creating instances
         """
         self.api_client = api_client
-        self.base_factory = base_factory
     
     def create(self,
                start_date: Optional[str] = None,
@@ -63,9 +60,9 @@ class YouTubeDailyMetricsFactory(Factory):
                 for row in response['rows']:
                     date_obj = datetime.strptime(row[0], '%Y-%m-%d').date()
                     
-                    # Create DailyMetrics using base factory
-                    daily_metric = self.base_factory.create(
-                        date_val=date_obj,
+                    # Create DailyMetrics directly
+                    daily_metric = DailyMetrics(
+                        date=date_obj,
                         views=row[1] if len(row) > 1 else 0,
                         watch_time_minutes=row[2] if len(row) > 2 else 0,
                         average_view_duration_seconds=row[3] if len(row) > 3 else 0,

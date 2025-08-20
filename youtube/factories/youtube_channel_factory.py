@@ -1,30 +1,29 @@
-"""YouTube API decorator for Channel factory."""
+"""YouTube API factory for Channel."""
 
-from typing import TYPE_CHECKING, Any
-from models.factories.base import FactoryDecorator, Factory
+from typing import TYPE_CHECKING
+from models import Channel
+from models.factories.base import Factory
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient
 
 
-class YouTubeChannelFactory(FactoryDecorator):
-    """Decorator that adds YouTube API fetching to Channel factory."""
+class YouTubeChannelFactory(Factory):
+    """Factory that fetches channel data from YouTube API."""
     
-    def __init__(self, factory: Factory, api_client: 'YouTubeAPIClient'):
-        """Initialize with wrapped factory and API client.
+    def __init__(self, api_client: 'YouTubeAPIClient'):
+        """Initialize with API client.
         
         Args:
-            factory: The Channel factory to wrap
             api_client: YouTube API client for fetching data
         """
-        super().__init__(factory)
         self.api_client = api_client
     
-    def create(self, **kwargs) -> Any:
+    def create(self, **kwargs) -> Channel:
         """Create Channel, fetching from API if data not provided.
         
         If video_count is not in kwargs, fetches channel statistics
-        from YouTube API. Otherwise delegates to wrapped factory.
+        from YouTube API. Otherwise creates Channel directly.
         
         Args:
             **kwargs: Arguments for creating Channel
@@ -32,9 +31,9 @@ class YouTubeChannelFactory(FactoryDecorator):
         Returns:
             Channel instance
         """
-        # If data already provided, just delegate
+        # If data already provided, just create directly
         if 'video_count' in kwargs:
-            return self.factory.create(**kwargs)
+            return Channel(**kwargs)
         
         # Fetch from YouTube API
         youtube_data = self.api_client.get_data_service()
@@ -51,17 +50,24 @@ class YouTubeChannelFactory(FactoryDecorator):
                 kwargs['video_count'] = int(stats.get('videoCount', 0))
                 kwargs['subscriber_count'] = int(stats.get('subscriberCount', 0))
                 kwargs['total_view_count'] = int(stats.get('viewCount', 0))
+                # Set defaults for optional fields
+                kwargs.setdefault('advertiser_count', 0)
+                kwargs.setdefault('integrations', '')
             else:
                 # No channel data found
                 kwargs['video_count'] = 0
                 kwargs['subscriber_count'] = 0
                 kwargs['total_view_count'] = 0
+                kwargs['advertiser_count'] = 0
+                kwargs['integrations'] = ''
         except Exception as e:
             print(f"Error fetching channel statistics: {e}")
             # Set defaults on error
             kwargs['video_count'] = 0
             kwargs['subscriber_count'] = 0
             kwargs['total_view_count'] = 0
+            kwargs['advertiser_count'] = 0
+            kwargs['integrations'] = ''
         
-        # Delegate to wrapped factory with fetched data
-        return self.factory.create(**kwargs)
+        # Create Channel with fetched data
+        return Channel(**kwargs)

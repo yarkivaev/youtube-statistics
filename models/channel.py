@@ -1,7 +1,6 @@
 """Channel domain entity."""
 
 from dataclasses import dataclass
-from typing import Optional
 
 
 @dataclass
@@ -11,18 +10,14 @@ class Channel:
     video_count: int
     subscriber_count: int
     total_view_count: int
-    advertiser_count: Optional[int] = None
-    integrations: Optional[str] = None
+    advertiser_count: int = 0
+    integrations: str = ''
     
     def calculate_avg_views_per_video(self) -> float:
         """Calculate average views per video."""
         if self.video_count == 0:
             return 0.0
         return self.total_view_count / self.video_count
-    
-    def has_monetization_data(self) -> bool:
-        """Check if channel has monetization data."""
-        return self.advertiser_count is not None
     
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""

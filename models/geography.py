@@ -1,7 +1,7 @@
 """Geographic metrics domain entity."""
 
 from dataclasses import dataclass
-from typing import Optional, Dict
+from typing import Dict
 
 
 # Country code to name mapping (class level constant)
@@ -44,40 +44,33 @@ class GeographicMetrics:
     """Geographic distribution of metrics."""
     
     country_code: str
-    views: Optional[int] = None
-    watch_time_minutes: Optional[int] = None
-    subscribers_gained: Optional[int] = None
+    views: int = 0
+    watch_time_minutes: int = 0
+    subscribers_gained: int = 0
     
     @property
     def country_name(self) -> str:
         """Get localized country name."""
         return COUNTRY_NAMES.get(self.country_code, self.country_code)
     
-    @property
-    def has_views_data(self) -> bool:
-        """Check if this entry has views data."""
-        return self.views is not None and self.views > 0
-    
-    @property
-    def has_subscriber_data(self) -> bool:
-        """Check if this entry has subscriber data."""
-        return self.subscribers_gained is not None and self.subscribers_gained > 0
-    
-    def to_dict(self) -> dict:
-        """Convert to dictionary for serialization."""
+    def export(self) -> dict:
+        """Export GeographicMetrics to dictionary."""
         result = {
             'country_code': self.country_code,
             'country_name': self.country_name
         }
         
-        if self.views is not None:
-            result['views'] = self.views
-        if self.watch_time_minutes is not None:
-            result['watch_time_minutes'] = self.watch_time_minutes
-        if self.subscribers_gained is not None:
-            result['subscribers_gained'] = self.subscribers_gained
-            
+        result['views'] = self.views
+        result['watch_time_minutes'] = self.watch_time_minutes
+        result['subscribers_gained'] = self.subscribers_gained
+        # Calculate percentage if we can
+        result['percentage'] = 0.0  # Would need total to calculate
+        
         return result
+    
+    def to_dict(self) -> dict:
+        """Convert to dictionary for serialization."""
+        return self.export()
     
     @classmethod
     def from_views_data(cls, country_code: str, views: int, 
