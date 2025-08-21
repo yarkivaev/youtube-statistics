@@ -52,13 +52,16 @@ class YoutubeMetricsSheetsReport(GoogleSheetsReport):
             ChannelFragmentFactory,
             MonthlyMetricsFragmentFactory,
             SectionHeaderFragmentFactory,
-            SubscriberTotalFragmentFactory
+            SubscriberTotalFragmentFactory,
+            GeographicFragmentFactory
         )
         
         # Create monthly aggregation factory using the report's daily metrics and video counts
         self.monthly_factory = MonthlyMetricsFactory(
             self.report.daily_metrics,
-            video_counts_by_month=self.report.video_counts_by_month
+            video_counts_by_month=self.report.video_counts_by_month,
+            geographic_views_by_month=self.report.geographic_views_by_month,
+            geographic_subscribers_by_month=self.report.geographic_subscribers_by_month
         )
         
         # Create base spreadsheet fragment factory
@@ -70,6 +73,7 @@ class YoutubeMetricsSheetsReport(GoogleSheetsReport):
         self.metrics_fragment_factory = MonthlyMetricsFragmentFactory(spreadsheet_factory)
         self.section_fragment_factory = SectionHeaderFragmentFactory(spreadsheet_factory)
         self.subscriber_fragment_factory = SubscriberTotalFragmentFactory(spreadsheet_factory)
+        self.geographic_fragment_factory = GeographicFragmentFactory(spreadsheet_factory)
     
     def export(self) -> str:
         """Export YouTubeMetrics to Google Sheets in monthly columns format.
@@ -95,6 +99,7 @@ class YoutubeMetricsSheetsReport(GoogleSheetsReport):
             metrics_factory=self.metrics_fragment_factory,
             section_factory=self.section_fragment_factory,
             subscriber_factory=self.subscriber_fragment_factory,
+            geographic_factory=self.geographic_fragment_factory,
             spreadsheet_id=spreadsheet_id,
             sheet_name=self.sheet_name,
             create_new=False

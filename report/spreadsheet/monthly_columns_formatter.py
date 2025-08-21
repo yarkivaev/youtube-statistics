@@ -41,6 +41,7 @@ class MonthlyColumnsFormatter(GoogleSheetsReport):
         metrics_factory: Factory,
         section_factory: Factory,
         subscriber_factory: Factory,
+        geographic_factory: Factory = None,
         spreadsheet_id: Optional[str] = None,
         sheet_name: Optional[str] = None,
         create_new: bool = True,
@@ -56,6 +57,7 @@ class MonthlyColumnsFormatter(GoogleSheetsReport):
             metrics_factory: Factory for creating metrics fragments
             section_factory: Factory for creating section header fragments
             subscriber_factory: Factory for creating subscriber total fragments
+            geographic_factory: Optional factory for creating geographic fragments
             spreadsheet_id: Optional existing spreadsheet ID
             sheet_name: Optional name for the sheet (defaults to 'Analytics')
             create_new: Whether to create a new spreadsheet
@@ -74,6 +76,7 @@ class MonthlyColumnsFormatter(GoogleSheetsReport):
         self.metrics_factory = metrics_factory
         self.section_factory = section_factory
         self.subscriber_factory = subscriber_factory
+        self.geographic_factory = geographic_factory
         self.sheet_name = sheet_name or 'Analytics'
     
     def _format_month_header(self, year: int, month: int) -> str:
@@ -120,6 +123,12 @@ class MonthlyColumnsFormatter(GoogleSheetsReport):
         # Optional subscriber total
         subscriber_total = self.subscriber_factory.create(channel=self.report.channel, months=months)
         
+        # Optional geographic data
+        if self.geographic_factory:
+            geographic_fragment = self.geographic_factory.create(monthly_data=self.monthly_data, months=months)
+        else:
+            geographic_fragment = None
+        
         # Merge all fragments vertically
         result = header_fragment
         result = VerticalMergedSpreadsheetFragment(result, channel_fragment)
@@ -129,6 +138,10 @@ class MonthlyColumnsFormatter(GoogleSheetsReport):
         
         if subscriber_total.rows:
             result = VerticalMergedSpreadsheetFragment(result, subscriber_total)
+        
+        if geographic_fragment and geographic_fragment.rows:
+            result = VerticalMergedSpreadsheetFragment(result, empty_row)
+            result = VerticalMergedSpreadsheetFragment(result, geographic_fragment)
         
         return result
     

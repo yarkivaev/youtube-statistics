@@ -1,7 +1,7 @@
 """Monthly aggregated metrics model."""
 
-from typing import Dict, Any
-from dataclasses import dataclass
+from typing import Dict, Any, List
+from dataclasses import dataclass, field
 
 
 @dataclass
@@ -17,6 +17,8 @@ class MonthlyMetrics:
     advertiser_count: int = 0  # Would need manual input
     integrations: str = ''  # Would need manual input
     days_with_data: int = 0
+    geographic_views_top: List = field(default_factory=list)  # Top countries by views
+    geographic_subscribers_top: List = field(default_factory=list)  # Top countries by subscribers
     
     
     @property
@@ -37,7 +39,7 @@ class MonthlyMetrics:
         Returns:
             Dictionary with aggregated monthly metrics
         """
-        return {
+        result = {
             'month_key': self.month_key,
             'views': self.views,
             'watch_time_minutes': self.watch_time_minutes,
@@ -50,6 +52,21 @@ class MonthlyMetrics:
             'net_subscribers': self.net_subscribers,
             'average_daily_views': self.average_daily_views
         }
+        
+        # Add geographic data if available
+        if self.geographic_views_top:
+            result['geographic_views_top'] = [
+                {'country': g.country_code, 'views': g.views} 
+                for g in self.geographic_views_top
+            ]
+        
+        if self.geographic_subscribers_top:
+            result['geographic_subscribers_top'] = [
+                {'country': g.country_code, 'subscribers': g.subscribers_gained}
+                for g in self.geographic_subscribers_top
+            ]
+        
+        return result
     
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for serialization."""

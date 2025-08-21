@@ -10,6 +10,7 @@ from .channel_fragment_factory import ChannelFragmentFactory
 from .monthly_metrics_fragment_factory import MonthlyMetricsFragmentFactory
 from .section_header_fragment_factory import SectionHeaderFragmentFactory
 from .subscriber_total_fragment_factory import SubscriberTotalFragmentFactory
+from .geographic_fragment_factory import GeographicFragmentFactory
 
 __all__ = [
     'SpreadsheetFragmentFactory',
@@ -18,4 +19,5 @@ __all__ = [
     'MonthlyMetricsFragmentFactory',
     'SectionHeaderFragmentFactory',
     'SubscriberTotalFragmentFactory',
+    'GeographicFragmentFactory',
 ]

@@ -40,6 +40,7 @@ class YouTubeMetricsFactory(Factory):
             YouTubeChannelFactory,
             YouTubeDailyMetricsFactory,
             YouTubeGeographicFactory,
+            YouTubeMonthlyGeographicFactory,
             YouTubeRevenueFactory,
             YouTubeViewsFactory,
             YouTubeVideoListFactory
@@ -50,6 +51,7 @@ class YouTubeMetricsFactory(Factory):
         self.daily_metrics_factory = YouTubeDailyMetricsFactory(self.api_client)
         self.views_breakdown_factory = YouTubeViewsFactory(self.api_client)
         self.geographic_factory = YouTubeGeographicFactory(self.api_client)
+        self.monthly_geographic_factory = YouTubeMonthlyGeographicFactory(self.api_client)
         self.video_list_factory = YouTubeVideoListFactory(self.api_client)
         
         # Only initialize revenue factory if not skipping revenue
@@ -95,6 +97,23 @@ class YouTubeMetricsFactory(Factory):
         video_counts_by_month = self.video_list_factory.create(
             start_date=start_date.isoformat(),
             end_date=end_date.isoformat()
+        )
+        
+        # Fetch monthly geographic data
+        print("Fetching monthly geographic views...")
+        geographic_views_by_month = self.monthly_geographic_factory.create(
+            start_date=start_date.isoformat(),
+            end_date=end_date.isoformat(),
+            fetch_type='views',
+            max_results=9
+        )
+        
+        print("Fetching monthly geographic subscribers...")
+        geographic_subscribers_by_month = self.monthly_geographic_factory.create(
+            start_date=start_date.isoformat(),
+            end_date=end_date.isoformat(),
+            fetch_type='subscribers',
+            max_results=5
         )
         
         # Fetch daily metrics first (needed for subscription aggregation)
@@ -166,7 +185,9 @@ class YouTubeMetricsFactory(Factory):
             geographic_views=geographic_views,
             geographic_subscribers=geographic_subscribers,
             daily_metrics=daily_metrics,
-            video_counts_by_month=video_counts_by_month
+            video_counts_by_month=video_counts_by_month,
+            geographic_views_by_month=geographic_views_by_month,
+            geographic_subscribers_by_month=geographic_subscribers_by_month
         )
         
         return report

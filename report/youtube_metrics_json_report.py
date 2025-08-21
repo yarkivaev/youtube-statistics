@@ -28,10 +28,12 @@ class YoutubeMetricsJsonReport:
         """Initialize monthly aggregation of metrics."""
         from models.factories import MonthlyMetricsFactory
         
-        # Create monthly aggregation factory using the report's daily metrics and video counts
+        # Create monthly aggregation factory using the report's daily metrics, video counts and geographic data
         self.monthly_factory = MonthlyMetricsFactory(
             self.report.daily_metrics,
-            video_counts_by_month=self.report.video_counts_by_month
+            video_counts_by_month=self.report.video_counts_by_month,
+            geographic_views_by_month=self.report.geographic_views_by_month,
+            geographic_subscribers_by_month=self.report.geographic_subscribers_by_month
         )
         self.monthly_data = self.monthly_factory.create()
     
@@ -73,7 +75,7 @@ class YoutubeMetricsJsonReport:
         
         for month_key in sorted(self.monthly_data.keys()):
             month_data = self.monthly_data[month_key]
-            monthly_metrics.append({
+            month_metric = {
                 "month": month_key,
                 "year": month_data.get('year'),
                 "month_number": month_data.get('month'),
@@ -86,7 +88,36 @@ class YoutubeMetricsJsonReport:
                 "net_subscribers": month_data.get('subscribers_gained', 0) - month_data.get('subscribers_lost', 0),
                 "revenue": float(month_data.get('estimated_revenue', 0)),
                 "active_days": month_data.get('active_days', 0)
-            })
+            }
+            
+            # Add geographic data if available with percentages
+            if 'geographic_views_top' in month_data:
+                total_views = month_data.get('views', 0)
+                top_views = []
+                for geo in month_data['geographic_views_top'][:5]:  # Top 5
+                    views = geo.get('views', 0)
+                    percentage = round((views / total_views * 100), 1) if total_views > 0 else 0
+                    top_views.append({
+                        'country': geo.get('country'),
+                        'views': views,
+                        'percentage': percentage
+                    })
+                month_metric['top_countries_by_views'] = top_views
+            
+            if 'geographic_subscribers_top' in month_data:
+                total_subs = month_data.get('subscribers_gained', 0)
+                top_subs = []
+                for geo in month_data['geographic_subscribers_top'][:5]:  # Top 5
+                    subscribers = geo.get('subscribers', 0)
+                    percentage = round((subscribers / total_subs * 100), 1) if total_subs > 0 else 0
+                    top_subs.append({
+                        'country': geo.get('country'),
+                        'subscribers': subscribers,
+                        'percentage': percentage
+                    })
+                month_metric['top_countries_by_subscribers'] = top_subs
+            
+            monthly_metrics.append(month_metric)
         
         return {
             "title": "Monthly Metrics",

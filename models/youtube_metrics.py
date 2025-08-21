@@ -24,6 +24,8 @@ class YouTubeMetrics:
     geographic_subscribers: List[GeographicMetrics] = field(default_factory=list)
     daily_metrics: List[DailyMetrics] = field(default_factory=list)
     video_counts_by_month: Dict[str, int] = field(default_factory=dict)
+    geographic_views_by_month: Dict[str, List[GeographicMetrics]] = field(default_factory=dict)
+    geographic_subscribers_by_month: Dict[str, List[GeographicMetrics]] = field(default_factory=dict)
     
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""
