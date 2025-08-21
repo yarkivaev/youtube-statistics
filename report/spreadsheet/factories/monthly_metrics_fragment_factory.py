@@ -27,12 +27,14 @@ class MonthlyMetricsFragmentFactory(FactoryDecorator):
             **kwargs: Must include:
                 - monthly_data: Dictionary with month keys and metric values
                 - months: Sorted list of month keys
+                - channel: Optional Channel object with initial subscriber count
             
         Returns:
             Formatted SpreadsheetFragment with metrics data
         """
         monthly_data = kwargs.get('monthly_data', {})
         months = kwargs.get('months', [])
+        channel = kwargs.get('channel')
         
         # Use the wrapped factory to create base fragment
         fragment = self.factory.create()
@@ -74,6 +76,17 @@ class MonthlyMetricsFragmentFactory(FactoryDecorator):
             net = gained - lost
             row_net.extend([f"{net:+d}" if net != 0 else "0", '', ''])
         fragment = fragment.with_row(row_net)
+        
+        # Total subscribers row - calculate cumulative total
+        row_total_subs = ['Количество подписчиков']
+        # Start with initial subscriber count from channel if available
+        cumulative_subs = channel.subscriber_count if channel else 0
+        for month_key in months:
+            gained = monthly_data.get(month_key, {}).get('subscribers_gained', 0)
+            lost = monthly_data.get(month_key, {}).get('subscribers_lost', 0)
+            cumulative_subs += (gained - lost)
+            row_total_subs.extend([str(cumulative_subs), '', ''])
+        fragment = fragment.with_row(row_total_subs)
         
         # Apply metrics formatting
         formats = []

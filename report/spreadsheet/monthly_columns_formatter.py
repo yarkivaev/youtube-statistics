@@ -118,7 +118,11 @@ class MonthlyColumnsFormatter(GoogleSheetsReport):
         metrics_header = self.section_factory.create(title='Метрики', num_months=len(months))
         
         # Monthly metrics
-        metrics_fragment = self.metrics_factory.create(monthly_data=self.monthly_data, months=months)
+        metrics_fragment = self.metrics_factory.create(
+            monthly_data=self.monthly_data, 
+            months=months,
+            channel=self.report.channel
+        )
         
         # Optional subscriber total
         subscriber_total = self.subscriber_factory.create(channel=self.report.channel, months=months)
