@@ -27,12 +27,14 @@ class ChannelFragmentFactory(FactoryDecorator):
             **kwargs: Must include:
                 - channel: Channel object to export
                 - months: List of month keys (YYYY-MM format)
+                - monthly_data: Optional dict with monthly metrics including video counts
             
         Returns:
             SpreadsheetFragment with channel data
         """
         channel = kwargs.get('channel')
         months = kwargs.get('months', [])
+        monthly_data = kwargs.get('monthly_data', {})
         
         if not channel:
             return self.factory.create()
@@ -40,11 +42,15 @@ class ChannelFragmentFactory(FactoryDecorator):
         # Use the wrapped factory to create base fragment
         fragment = self.factory.create()
         
-        # Row 1: Video count
+        # Row 1: Video count (from monthly data if available, otherwise use total)
         row1 = ['Количество роликов']
-        for _ in months:
-            # For now, show total video count (ideally per-month uploads)
-            row1.extend([str(channel.video_count), '', ''])
+        for month in months:
+            if month in monthly_data and 'video_count' in monthly_data[month]:
+                video_count = monthly_data[month]['video_count']
+            else:
+                # Fallback to total if monthly data not available
+                video_count = channel.video_count
+            row1.extend([str(video_count), '', ''])
         fragment = fragment.with_row(row1)
         
         # Row 2: Advertiser count (placeholder)

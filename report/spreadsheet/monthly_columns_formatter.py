@@ -102,7 +102,11 @@ class MonthlyColumnsFormatter(GoogleSheetsReport):
         
         # Create individual fragments using passed factories
         header_fragment = self.header_factory.create(months=months, month_names_ru=self.MONTH_NAMES_RU)
-        channel_fragment = self.channel_factory.create(channel=self.report.channel, months=months)
+        channel_fragment = self.channel_factory.create(
+            channel=self.report.channel, 
+            months=months,
+            monthly_data=self.monthly_data
+        )
         
         # Empty row between sections
         empty_row = SpreadsheetFragment().with_row([''] * (1 + 3 * len(months)))

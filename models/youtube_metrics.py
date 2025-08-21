@@ -2,7 +2,7 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 from .channel import Channel
 from .metrics import SubscriptionMetrics, ViewsBreakdown, DateRange
 from .daily_metrics import DailyMetrics
@@ -23,6 +23,7 @@ class YouTubeMetrics:
     geographic_views: List[GeographicMetrics] = field(default_factory=list)
     geographic_subscribers: List[GeographicMetrics] = field(default_factory=list)
     daily_metrics: List[DailyMetrics] = field(default_factory=list)
+    video_counts_by_month: Dict[str, int] = field(default_factory=dict)
     
     def to_dict(self) -> dict:
         """Convert to dictionary for serialization."""

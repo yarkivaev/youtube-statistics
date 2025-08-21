@@ -55,8 +55,11 @@ class YoutubeMetricsSheetsReport(GoogleSheetsReport):
             SubscriberTotalFragmentFactory
         )
         
-        # Create monthly aggregation factory using the report's daily metrics
-        self.monthly_factory = MonthlyMetricsFactory(self.report.daily_metrics)
+        # Create monthly aggregation factory using the report's daily metrics and video counts
+        self.monthly_factory = MonthlyMetricsFactory(
+            self.report.daily_metrics,
+            video_counts_by_month=self.report.video_counts_by_month
+        )
         
         # Create base spreadsheet fragment factory
         spreadsheet_factory = SpreadsheetFragmentFactory()

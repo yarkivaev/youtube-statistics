@@ -28,8 +28,11 @@ class YoutubeMetricsJsonReport:
         """Initialize monthly aggregation of metrics."""
         from models.factories import MonthlyMetricsFactory
         
-        # Create monthly aggregation factory using the report's daily metrics
-        self.monthly_factory = MonthlyMetricsFactory(self.report.daily_metrics)
+        # Create monthly aggregation factory using the report's daily metrics and video counts
+        self.monthly_factory = MonthlyMetricsFactory(
+            self.report.daily_metrics,
+            video_counts_by_month=self.report.video_counts_by_month
+        )
         self.monthly_data = self.monthly_factory.create()
     
     def _format_channel_section(self) -> Dict[str, Any]:
@@ -74,6 +77,7 @@ class YoutubeMetricsJsonReport:
                 "month": month_key,
                 "year": month_data.get('year'),
                 "month_number": month_data.get('month'),
+                "video_count": month_data.get('video_count', 0),  # Add video count
                 "views": month_data.get('views', 0),
                 "watch_time_hours": round(month_data.get('watch_time_minutes', 0) / 60, 2),
                 "average_view_duration_minutes": round(month_data.get('average_view_duration_seconds', 0) / 60, 2),

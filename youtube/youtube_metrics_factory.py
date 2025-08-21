@@ -41,7 +41,8 @@ class YouTubeMetricsFactory(Factory):
             YouTubeDailyMetricsFactory,
             YouTubeGeographicFactory,
             YouTubeRevenueFactory,
-            YouTubeViewsFactory
+            YouTubeViewsFactory,
+            YouTubeVideoListFactory
         )
         
         # Initialize YouTube API factories
@@ -49,6 +50,7 @@ class YouTubeMetricsFactory(Factory):
         self.daily_metrics_factory = YouTubeDailyMetricsFactory(self.api_client)
         self.views_breakdown_factory = YouTubeViewsFactory(self.api_client)
         self.geographic_factory = YouTubeGeographicFactory(self.api_client)
+        self.video_list_factory = YouTubeVideoListFactory(self.api_client)
         
         # Only initialize revenue factory if not skipping revenue
         if not self.skip_revenue:
@@ -87,6 +89,13 @@ class YouTubeMetricsFactory(Factory):
         # Fetch channel statistics
         print("Fetching channel statistics...")
         channel = self.channel_factory.create()
+        
+        # Fetch video counts by month
+        print("Fetching video upload counts by month...")
+        video_counts_by_month = self.video_list_factory.create(
+            start_date=start_date.isoformat(),
+            end_date=end_date.isoformat()
+        )
         
         # Fetch daily metrics first (needed for subscription aggregation)
         print("Fetching daily metrics...")
@@ -156,7 +165,8 @@ class YouTubeMetricsFactory(Factory):
             revenue_metrics=revenue_metrics,
             geographic_views=geographic_views,
             geographic_subscribers=geographic_subscribers,
-            daily_metrics=daily_metrics
+            daily_metrics=daily_metrics,
+            video_counts_by_month=video_counts_by_month
         )
         
         return report
