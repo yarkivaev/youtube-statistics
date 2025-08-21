@@ -196,7 +196,7 @@ def update_channel_in_spreadsheet(
         skip_revenue=skip_revenue,
         exportable=not dry_run,
         spreadsheet_id=spreadsheet_id if not dry_run else None,
-        sheet_name='Analyticss'  # Hardcoded sheet name
+        sheet_name='YouTube'  # Hardcoded sheet name
     )
     
     # Create report (YouTubeMetrics or YoutubeMetricsSheetsReport)

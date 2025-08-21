@@ -134,8 +134,6 @@ class GoogleSheetsReport(Report):
         try:
             # Try to get existing worksheet
             worksheet = self.spreadsheet.worksheet(self.sheet_name)
-            # Clear existing content
-            worksheet.clear()
         except gspread.WorksheetNotFound:
             # Create new worksheet
             worksheet = self.spreadsheet.add_worksheet(

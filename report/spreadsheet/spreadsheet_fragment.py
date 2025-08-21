@@ -109,4 +109,23 @@ class SpreadsheetFragment:
         # Base implementation just updates the data
         sheet_data = self.to_list()
         if sheet_data:
-            worksheet.update('A1', sheet_data)
+            # Calculate the range to clear based on data size
+            num_rows = len(sheet_data)
+            num_cols = max(len(row) for row in sheet_data) if sheet_data else 0
+            
+            if num_rows > 0 and num_cols > 0:
+                # Clear the exact range we're about to write
+                # Handle column letters beyond Z
+                if num_cols <= 26:
+                    end_col = chr(65 + num_cols - 1)
+                else:
+                    # For columns beyond Z, use AA, AB, etc.
+                    first_letter = chr(65 + (num_cols - 1) // 26 - 1)
+                    second_letter = chr(65 + (num_cols - 1) % 26)
+                    end_col = first_letter + second_letter if num_cols > 26 else chr(65 + num_cols - 1)
+                
+                clear_range = f'A1:{end_col}{num_rows}'
+                worksheet.batch_clear([clear_range])
+                
+                # Now write the new data
+                worksheet.update('A1', sheet_data)
