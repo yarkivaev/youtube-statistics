@@ -10,11 +10,11 @@ from youtube.youtube_api import YouTubeAPIClient
 from youtube.youtube_metrics_factory import YouTubeMetricsFactory
 
 
-def parse_arguments() -> Tuple[str, Optional[List[int]], Optional[Tuple[str, str]], bool, Optional[List[str]], bool]:
+def parse_arguments() -> Tuple[str, Optional[List[int]], Optional[Tuple[str, str]], bool, Optional[List[str]], bool, bool]:
     """Parse command line arguments.
     
     Returns:
-        Tuple of (spreadsheet_id, channel_indices, date_filter, dry_run, channel_names, skip_revenue)
+        Tuple of (spreadsheet_id, channel_indices, date_filter, dry_run, channel_names, skip_revenue, json_export)
     """
     # Default values
     spreadsheet_id = "1YBazG-UVCnSYwYjSKmXwaySVFDaQuifsL14aWTq7S9U"  # Default spreadsheet
@@ -23,10 +23,12 @@ def parse_arguments() -> Tuple[str, Optional[List[int]], Optional[Tuple[str, str
     dry_run = False
     channel_names = None
     skip_revenue = False
+    json_export = False
     
     # Parse flags
     dry_run = '--dry-run' in sys.argv or '-d' in sys.argv
     skip_revenue = '--skip-revenue' in sys.argv
+    json_export = '--json' in sys.argv
     
     # Parse date range
     start_date = None
@@ -82,7 +84,7 @@ def parse_arguments() -> Tuple[str, Optional[List[int]], Optional[Tuple[str, str
             print("Use format: 0,1,2 or just 1 for single channel")
             sys.exit(1)
     
-    return spreadsheet_id, channel_indices, date_filter, dry_run, channel_names, skip_revenue
+    return spreadsheet_id, channel_indices, date_filter, dry_run, channel_names, skip_revenue, json_export
 
 
 def resolve_channel_identifier(youtube_data_service, channel_identifier: str) -> Optional[str]:
@@ -162,9 +164,10 @@ def update_channel_in_spreadsheet(
     channel_id: Optional[str],
     date_filter: Optional[Tuple[str, str]],
     dry_run: bool,
-    skip_revenue: bool = False
+    skip_revenue: bool = False,
+    json_export: bool = False
 ) -> None:
-    """Update a single channel's data in the spreadsheet.
+    """Update a single channel's data in the spreadsheet or export to JSON.
     
     Args:
         api_client: YouTube API client
@@ -173,6 +176,7 @@ def update_channel_in_spreadsheet(
         date_filter: Optional date range filter
         dry_run: If True, show what would be done without making changes
         skip_revenue: If True, skip fetching revenue data
+        json_export: If True, export to JSON instead of Google Sheets
     """
     # Determine date range
     if date_filter:
@@ -189,32 +193,58 @@ def update_channel_in_spreadsheet(
     else:
         period = None
     
-    # Create composite factory with all configuration
+    # Create base YouTube data factory (no export concerns)
     youtube_factory = YouTubeMetricsFactory(
         api_client=api_client,
         period=period,
-        skip_revenue=skip_revenue,
-        exportable=not dry_run,
-        spreadsheet_id=spreadsheet_id if not dry_run else None,
-        sheet_name='YouTube'  # Hardcoded sheet name
+        skip_revenue=skip_revenue
     )
     
-    # Create report (YouTubeMetrics or YoutubeMetricsSheetsReport)
+    # Decide which factory to use based on export type
+    if not dry_run and not json_export:
+        # Wrap with sheets export capability
+        from report.spreadsheet import SheetsReportFactory, YoutubeMetricsSheetsReport
+        factory = SheetsReportFactory(
+            base_factory=youtube_factory,
+            wrapper_class=YoutubeMetricsSheetsReport,
+            spreadsheet_id=spreadsheet_id,
+            sheet_name='YouTube'
+        )
+    elif json_export and not dry_run:
+        # Wrap with JSON export capability
+        from report import JsonReportFactory, YoutubeMetricsJsonReport
+        factory = JsonReportFactory(
+            base_factory=youtube_factory,
+            wrapper_class=YoutubeMetricsJsonReport
+        )
+    else:
+        # Use base factory for dry run only
+        factory = youtube_factory
+    
+    # Create report (either YouTubeMetrics or YoutubeMetricsSheetsReport)
     print("Fetching analytics data...")
-    report = youtube_factory.create()
+    report = factory.create()
     
     if dry_run:
         print("\n" + "="*60)
         print("DRY RUN MODE - No changes will be made")
         print("="*60)
-        print(f"\nWould update spreadsheet: {spreadsheet_id}")
+        if json_export:
+            print(f"\nWould export to: youtube_analytics.json")
+        else:
+            print(f"\nWould update spreadsheet: {spreadsheet_id}")
         print(f"Channel ID: {channel_id or 'Authenticated channel'}")
         print(f"Period: {report.period.start_date} to {report.period.end_date}")
         print(f"Total views: {sum(dm.views for dm in report.daily_metrics) if report.daily_metrics else 0}")
         print(f"Subscribers gained: {report.subscription_metrics.subscribers_gained if report.subscription_metrics else 0}")
         print(f"Subscribers lost: {report.subscription_metrics.subscribers_lost if report.subscription_metrics else 0}")
+    elif json_export:
+        # Export to JSON file
+        print(f"\nExporting to JSON...")
+        filename = report.export()
+        print(f"Data exported to: {filename}")
     else:
-        # Export using the report's export method
+        # Export to Google Sheets
         print(f"\nExporting to Google Sheets...")
         url = report.export()
         print(f"\nSuccessfully updated spreadsheet")
@@ -246,17 +276,22 @@ def main():
         
         # Dry run to see what would be updated
         python main.py 1YrSnJyJq0xZ87QW9LzP0ODY8gfTjp_ZKqQRS2YW-A3I 0 --dry-run
+        
+        # Export to JSON instead of Google Sheets
+        python main.py --json --range 2024-01-01:2024-12-31
     """
     print("YouTube Analytics")
     print("="*60)
     
     # Parse arguments
-    spreadsheet_id, channel_indices, date_filter, dry_run, channel_names, skip_revenue = parse_arguments()
+    spreadsheet_id, channel_indices, date_filter, dry_run, channel_names, skip_revenue, json_export = parse_arguments()
     
     if date_filter:
         print(f"Date filter: {date_filter[0] or 'any'} to {date_filter[1] or 'any'}")
     if skip_revenue:
         print("Skipping revenue data (--skip-revenue flag set)")
+    if json_export:
+        print("Exporting to JSON format (--json flag set)")
     
     # Initialize API client
     api_client = YouTubeAPIClient()
@@ -296,7 +331,8 @@ def main():
                 channel_id=channel_id,
                 date_filter=date_filter,
                 dry_run=dry_run,
-                skip_revenue=skip_revenue
+                skip_revenue=skip_revenue,
+                json_export=json_export
             )
         except Exception as e:
             print(f"Error updating channel {idx}: {e}")

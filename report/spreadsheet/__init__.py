@@ -5,6 +5,9 @@ from .spreadsheet_fragment import SpreadsheetFragment
 from .formatted_spreadsheet_fragment import FormattedSpreadsheetFragment
 from .merged_spreadsheet_fragment import MergedSpreadsheetFragment, VerticalMergedSpreadsheetFragment
 
+# Factories
+from .sheets_report_factory import SheetsReportFactory
+
 # Google Sheets reports
 from .youtube_metrics_sheets_report import YoutubeMetricsSheetsReport
 from .channel_sheets_report import ChannelSheetsReport
@@ -21,6 +24,8 @@ __all__ = [
     'FormattedSpreadsheetFragment',
     'MergedSpreadsheetFragment',
     'VerticalMergedSpreadsheetFragment',
+    # Factories
+    'SheetsReportFactory',
     # Google Sheets reports
     'YoutubeMetricsSheetsReport',
     'ChannelSheetsReport',

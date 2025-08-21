@@ -1,7 +1,7 @@
 """Composite factory that unifies all YouTube Analytics factories."""
 
 from datetime import date, datetime, timedelta
-from typing import Optional, TYPE_CHECKING, Union
+from typing import Optional, TYPE_CHECKING
 from decimal import Decimal
 from models import DateRange, SubscriptionMetrics, RevenueMetrics, YouTubeMetrics
 from models.factories.base import Factory
@@ -17,10 +17,7 @@ class YouTubeMetricsFactory(Factory):
         self,
         api_client: 'YouTubeAPIClient',
         period: Optional[DateRange] = None,
-        skip_revenue: bool = False,
-        exportable: bool = False,
-        spreadsheet_id: Optional[str] = None,
-        sheet_name: Optional[str] = None
+        skip_revenue: bool = False
     ):
         """Initialize composite factory with API client and configuration.
         
@@ -28,16 +25,10 @@ class YouTubeMetricsFactory(Factory):
             api_client: YouTube API client instance
             period: Date range for analytics (None = last 30 days)
             skip_revenue: If True, skip fetching revenue data
-            exportable: If True, wrap report with export capability
-            spreadsheet_id: Optional Google Sheets ID for export
-            sheet_name: Optional name for the sheet (defaults to 'Analytics')
         """
         self.api_client = api_client
         self.period = period
         self.skip_revenue = skip_revenue
-        self.exportable = exportable
-        self.spreadsheet_id = spreadsheet_id
-        self.sheet_name = sheet_name
         
         # Initialize all factories
         self._initialize_factories()
@@ -66,14 +57,14 @@ class YouTubeMetricsFactory(Factory):
             self.revenue_factory = None
         
     
-    def create(self, **kwargs) -> Union[YouTubeMetrics, 'YoutubeMetricsSheetsReport']:
+    def create(self, **kwargs) -> YouTubeMetrics:
         """Fetch all YouTube data and create YouTubeMetrics.
         
         Args:
             **kwargs: Optional parameters (currently unused)
             
         Returns:
-            YouTubeMetrics or YoutubeMetricsSheetsReport if exportable=True
+            YouTubeMetrics instance with all fetched data
         """
         # Determine period
         if self.period is None:
@@ -167,14 +158,5 @@ class YouTubeMetricsFactory(Factory):
             geographic_subscribers=geographic_subscribers,
             daily_metrics=daily_metrics
         )
-        
-        # Wrap with export capability if requested
-        if self.exportable:
-            from report.spreadsheet import YoutubeMetricsSheetsReport
-            return YoutubeMetricsSheetsReport(
-                report=report,
-                spreadsheet_id=self.spreadsheet_id,
-                sheet_name=self.sheet_name
-            )
         
         return report

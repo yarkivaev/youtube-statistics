@@ -23,15 +23,15 @@ class YouTubeRevenueFactory(Factory):
         self.api_client = api_client
     
     def create(self,
-               start_date: Optional[date] = None,
-               end_date: Optional[date] = None,
+               start_date: Optional[str] = None,
+               end_date: Optional[str] = None,
                fetch_from_api: bool = False,
                **kwargs) -> RevenueMetrics:
         """Create RevenueMetrics, fetching from API if requested.
         
         Args:
-            start_date: Start date for the period
-            end_date: End date for the period
+            start_date: Start date for the period (ISO format string)
+            end_date: End date for the period (ISO format string)
             fetch_from_api: Whether to fetch from API
             **kwargs: Arguments for creating RevenueMetrics
             
@@ -42,7 +42,11 @@ class YouTubeRevenueFactory(Factory):
         if not fetch_from_api or 'total_revenue' in kwargs:
             period = kwargs.get('period')
             if not period and start_date and end_date:
-                period = DateRange(start_date=start_date, end_date=end_date)
+                # Convert string dates to date objects
+                from datetime import datetime as dt
+                start_dt = dt.strptime(start_date, '%Y-%m-%d').date() if isinstance(start_date, str) else start_date
+                end_dt = dt.strptime(end_date, '%Y-%m-%d').date() if isinstance(end_date, str) else end_date
+                period = DateRange(start_date=start_dt, end_date=end_dt)
             return RevenueMetrics(
                 total_revenue=kwargs.get('total_revenue', Decimal('0')),
                 ad_revenue=kwargs.get('ad_revenue', Decimal('0')),
@@ -56,7 +60,11 @@ class YouTubeRevenueFactory(Factory):
         if not start_date or not end_date:
             period = kwargs.get('period')
             if not period and start_date and end_date:
-                period = DateRange(start_date=start_date, end_date=end_date)
+                # Convert string dates to date objects
+                from datetime import datetime as dt
+                start_dt = dt.strptime(start_date, '%Y-%m-%d').date() if isinstance(start_date, str) else start_date
+                end_dt = dt.strptime(end_date, '%Y-%m-%d').date() if isinstance(end_date, str) else end_date
+                period = DateRange(start_date=start_dt, end_date=end_dt)
             return RevenueMetrics(
                 total_revenue=kwargs.get('total_revenue', Decimal('0')),
                 ad_revenue=kwargs.get('ad_revenue', Decimal('0')),
@@ -72,8 +80,8 @@ class YouTubeRevenueFactory(Factory):
         try:
             request = youtube_analytics.reports().query(
                 ids='channel==MINE',
-                startDate=start_date.isoformat() if isinstance(start_date, date) else start_date,
-                endDate=end_date.isoformat() if isinstance(end_date, date) else end_date,
+                startDate=start_date,  # Already a string from the composite factory
+                endDate=end_date,  # Already a string from the composite factory
                 metrics='estimatedRevenue,estimatedAdRevenue,estimatedRedPartnerRevenue',
                 dimensions='day',
                 sort='day'
@@ -129,7 +137,11 @@ class YouTubeRevenueFactory(Factory):
             raise
         
         # Create RevenueMetrics with fetched data
-        period = DateRange(start_date=start_date, end_date=end_date)
+        # Convert string dates to date objects for DateRange
+        from datetime import datetime as dt
+        start_dt = dt.strptime(start_date, '%Y-%m-%d').date() if isinstance(start_date, str) else start_date
+        end_dt = dt.strptime(end_date, '%Y-%m-%d').date() if isinstance(end_date, str) else end_date
+        period = DateRange(start_date=start_dt, end_date=end_dt)
         return RevenueMetrics(
             total_revenue=kwargs.get('total_revenue', Decimal('0')),
             ad_revenue=kwargs.get('ad_revenue'),
