@@ -1,6 +1,6 @@
 """JSON Report wrapper for YouTubeMetrics model."""
 
-from models import YouTubeMetrics
+from domain import YouTubeMetrics
 from typing import Dict, Any, List
 from datetime import datetime
 from .json_report import JsonReport
@@ -26,7 +26,7 @@ class YoutubeMetricsJsonReport:
     
     def _initialize_monthly_data(self):
         """Initialize monthly aggregation of metrics."""
-        from models.factories import MonthlyMetricsFactory
+        from domain import MonthlyMetricsFactory
         
         # Create monthly aggregation factory using the report's daily metrics, video counts and geographic data
         self.monthly_factory = MonthlyMetricsFactory(

@@ -1,6 +1,6 @@
 """Google Sheets Exported wrapper for ViewsBreakdown model."""
 
-from models import ViewsBreakdown
+from domain import ViewsBreakdown
 from ..base import Report
 
 

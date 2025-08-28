@@ -2,8 +2,7 @@
 
 from typing import TYPE_CHECKING, Optional, List
 from datetime import datetime
-from models.factories.base import Factory
-from models import DailyMetrics
+from domain import Factory, DailyMetrics
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient

@@ -1,6 +1,6 @@
 """Section header fragment factory for creating section header fragments."""
 
-from models.factories.base import Factory, FactoryDecorator
+from domain import Factory, FactoryDecorator
 from ..spreadsheet_fragment import SpreadsheetFragment
 from ..formatted_spreadsheet_fragment import FormattedSpreadsheetFragment, CellFormat, RangeFormat
 

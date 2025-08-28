@@ -1,37 +1,15 @@
-"""Daily metrics domain entity."""
+"""YouTube daily metrics domain entity."""
 
 from dataclasses import dataclass
 from datetime import date, datetime
 from typing import Optional, List
 from decimal import Decimal
-
-
-class ContentType:
-    """Types of content on YouTube."""
-    VIDEO = "video"
-    SHORTS = "shorts"
-    LIVE_STREAM = "live_stream"
-    UNKNOWN = "unknown"
-    
-    @classmethod
-    def from_api_value(cls, value: str) -> str:
-        """Map API values to ContentType."""
-        mapping = {
-            'VIDEO_TYPE_UPLOADED': cls.VIDEO,
-            'videoOnDemand': cls.VIDEO,
-            'LONG_FORM': cls.VIDEO,
-            'VIDEO_TYPE_SHORTS': cls.SHORTS,
-            'shorts': cls.SHORTS,
-            'SHORTS': cls.SHORTS,
-            'SHORT_FORM': cls.SHORTS,
-            'LIVE_STREAM': cls.LIVE_STREAM
-        }
-        return mapping.get(value, cls.UNKNOWN)
+from ..value_objects.youtube_content_type import YouTubeContentType
 
 
 @dataclass
-class DailyMetrics:
-    """Metrics for a single day including revenue data."""
+class YouTubeDailyMetrics:
+    """YouTube metrics for a single day including revenue data."""
     
     date: date
     views: int
@@ -40,10 +18,10 @@ class DailyMetrics:
     subscribers_gained: int
     subscribers_lost: int
     content_type: Optional[str] = None
-    # Revenue fields
+    # Revenue fields specific to YouTube
     estimated_revenue: Decimal = Decimal('0')
     ad_revenue: Decimal = Decimal('0')
-    red_partner_revenue: Decimal = Decimal('0')
+    red_partner_revenue: Decimal = Decimal('0')  # YouTube Premium revenue
     
     @property
     def net_subscribers(self) -> int:
@@ -56,7 +34,7 @@ class DailyMetrics:
         return self.views > 0 or self.subscribers_gained > 0 or self.subscribers_lost > 0
     
     def export(self) -> dict:
-        """Export DailyMetrics to dictionary."""
+        """Export YouTubeDailyMetrics to dictionary."""
         result = {
             'date': self.date.isoformat(),
             'views': self.views,
@@ -90,8 +68,8 @@ class DailyMetrics:
         }
     
     @classmethod
-    def from_api_row(cls, row: List, with_content_type: bool = False) -> 'DailyMetrics':
-        """Create DailyMetrics from API response row."""
+    def from_api_row(cls, row: List, with_content_type: bool = False) -> 'YouTubeDailyMetrics':
+        """Create YouTubeDailyMetrics from API response row."""
         base_metrics = cls(
             date=datetime.strptime(row[0], '%Y-%m-%d').date(),
             views=row[1],
@@ -102,7 +80,7 @@ class DailyMetrics:
         )
         
         if with_content_type and len(row) > 1:
-            base_metrics.content_type = ContentType.from_api_value(row[1])
+            base_metrics.content_type = YouTubeContentType.from_api_value(row[1])
             base_metrics.views = row[2] if len(row) > 2 else 0
             base_metrics.watch_time_minutes = row[3] if len(row) > 3 else 0
         

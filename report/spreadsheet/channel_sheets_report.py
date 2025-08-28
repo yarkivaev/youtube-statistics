@@ -1,6 +1,6 @@
 """Google Sheets Exported wrapper for Channel model."""
 
-from models import Channel
+from domain import Channel
 from ..base import Report
 
 

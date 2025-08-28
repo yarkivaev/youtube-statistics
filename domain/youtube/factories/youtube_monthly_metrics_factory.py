@@ -1,23 +1,23 @@
-"""Factory for creating monthly aggregated metrics from daily metrics."""
+"""Factory for creating YouTube monthly aggregated metrics from daily metrics."""
 
 from typing import Dict, Any, List
-from ..monthly_metrics import MonthlyMetrics
-from ..daily_metrics import DailyMetrics
-from .base import Factory
+from ..entities.youtube_monthly_metrics import YouTubeMonthlyMetrics
+from ..entities.youtube_daily_metrics import YouTubeDailyMetrics
+from domain.common.factories.base import Factory
 
 
-class MonthlyMetricsFactory(Factory):
-    """Factory for creating monthly aggregated metrics from daily metrics."""
+class YouTubeMonthlyMetricsFactory(Factory):
+    """Factory for creating YouTube monthly aggregated metrics from daily metrics."""
     
     def __init__(self, 
-                 daily_metrics: List[DailyMetrics], 
+                 daily_metrics: List[YouTubeDailyMetrics], 
                  video_counts_by_month: Dict[str, int] = None,
                  geographic_views_by_month: Dict[str, List] = None,
                  geographic_subscribers_by_month: Dict[str, List] = None):
         """Initialize the factory.
         
         Args:
-            daily_metrics: List of DailyMetrics to aggregate
+            daily_metrics: List of YouTubeDailyMetrics to aggregate
             video_counts_by_month: Optional dictionary with month keys (YYYY-MM) and video count values
             geographic_views_by_month: Optional dictionary with month keys and lists of GeographicMetrics for views
             geographic_subscribers_by_month: Optional dictionary with month keys and lists of GeographicMetrics for subscribers
@@ -28,7 +28,7 @@ class MonthlyMetricsFactory(Factory):
         self.geographic_subscribers_by_month = geographic_subscribers_by_month or {}
     
     def create(self, **kwargs) -> Dict[str, Dict[str, Any]]:
-        """Create monthly aggregated metrics.
+        """Create YouTube monthly aggregated metrics.
         
         Returns:
             Dictionary with month keys (YYYY-MM) and aggregated metrics
@@ -43,7 +43,7 @@ class MonthlyMetricsFactory(Factory):
             
             # Create monthly metrics if needed
             if month_key not in monthly_data:
-                monthly_data[month_key] = MonthlyMetrics(month_key)
+                monthly_data[month_key] = YouTubeMonthlyMetrics(month_key)
             
             # Aggregate daily metrics
             monthly = monthly_data[month_key]

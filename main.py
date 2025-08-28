@@ -182,7 +182,7 @@ def update_channel_in_spreadsheet(
     if date_filter:
         start_str, end_str = date_filter
         if start_str and end_str:
-            from models import DateRange
+            from domain import DateRange
             from datetime import date as dt_date
             period = DateRange(
                 start_date=dt_date.fromisoformat(start_str),
@@ -342,6 +342,11 @@ def main():
     print(f"\n{'='*60}")
     print("Completed")
     print(f"{'='*60}")
+
+
+def run():
+    """Entry point for Poetry script."""
+    main()
 
 
 if __name__ == "__main__":

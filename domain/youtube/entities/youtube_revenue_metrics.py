@@ -1,22 +1,22 @@
-"""Revenue-related domain entity."""
+"""YouTube revenue-related domain entity."""
 
 from dataclasses import dataclass
 from decimal import Decimal
 from typing import List
 from datetime import date
-from .metrics import DateRange
-from .daily_metrics import DailyMetrics
+from domain.common.entities.date_range import DateRange
+from .youtube_daily_metrics import YouTubeDailyMetrics
 
 
 @dataclass
-class RevenueMetrics:
-    """Revenue metrics for a period."""
+class YouTubeRevenueMetrics:
+    """YouTube revenue metrics for a period."""
     
     total_revenue: Decimal
     ad_revenue: Decimal
-    red_partner_revenue: Decimal
+    red_partner_revenue: Decimal  # YouTube Premium revenue
     period: DateRange
-    daily_revenue: List[DailyMetrics]
+    daily_revenue: List[YouTubeDailyMetrics]
     is_monetized: bool = False
     
     @property
@@ -31,12 +31,12 @@ class RevenueMetrics:
         """Check if there's any revenue."""
         return self.total_revenue > 0
     
-    def get_best_day(self) -> DailyMetrics:
+    def get_best_day(self) -> YouTubeDailyMetrics:
         """Get the day with highest revenue."""
         if not self.daily_revenue:
             # Return a default empty day
             from datetime import date as dt
-            return DailyMetrics(
+            return YouTubeDailyMetrics(
                 date=dt.today(),
                 views=0,
                 watch_time_minutes=0,
@@ -73,8 +73,8 @@ class RevenueMetrics:
         return result
     
     @classmethod
-    def create_unavailable(cls, period: DateRange) -> 'RevenueMetrics':
-        """Create a RevenueMetrics instance for when data is unavailable."""
+    def create_unavailable(cls, period: DateRange) -> 'YouTubeRevenueMetrics':
+        """Create a YouTubeRevenueMetrics instance for when data is unavailable."""
         return cls(
             total_revenue=Decimal('0'),
             ad_revenue=Decimal('0'),

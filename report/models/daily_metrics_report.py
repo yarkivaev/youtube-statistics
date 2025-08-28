@@ -1,6 +1,6 @@
 """Exported wrapper for DailyMetrics model."""
 
-from models import DailyMetrics
+from domain import DailyMetrics
 from ..base import Report
 
 

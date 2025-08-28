@@ -2,7 +2,7 @@
 
 from typing import TYPE_CHECKING, Dict, Optional
 from datetime import datetime
-from models.factories.base import Factory
+from domain import Factory
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient

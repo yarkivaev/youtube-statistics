@@ -3,26 +3,28 @@
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import List, Dict
-from .channel import Channel
-from .metrics import SubscriptionMetrics, ViewsBreakdown, DateRange
-from .daily_metrics import DailyMetrics
-from .geography import GeographicMetrics
-from .revenue import RevenueMetrics
+from .youtube_channel import YouTubeChannel
+from ..value_objects.youtube_subscription_metrics import YouTubeSubscriptionMetrics
+from ..value_objects.youtube_views_breakdown import YouTubeViewsBreakdown
+from domain.common.entities.date_range import DateRange
+from domain.common.entities.geographic_metrics import GeographicMetrics
+from .youtube_daily_metrics import YouTubeDailyMetrics
+from .youtube_revenue_metrics import YouTubeRevenueMetrics
 
 
 @dataclass
 class YouTubeMetrics:
     """Aggregate root entity containing all YouTube metrics data."""
     
-    channel: Channel
+    channel: YouTubeChannel
     period: DateRange
     generated_at: datetime
-    subscription_metrics: SubscriptionMetrics
-    views_breakdown: ViewsBreakdown
-    revenue_metrics: RevenueMetrics
+    subscription_metrics: YouTubeSubscriptionMetrics
+    views_breakdown: YouTubeViewsBreakdown
+    revenue_metrics: YouTubeRevenueMetrics
     geographic_views: List[GeographicMetrics] = field(default_factory=list)
     geographic_subscribers: List[GeographicMetrics] = field(default_factory=list)
-    daily_metrics: List[DailyMetrics] = field(default_factory=list)
+    daily_metrics: List[YouTubeDailyMetrics] = field(default_factory=list)
     video_counts_by_month: Dict[str, int] = field(default_factory=dict)
     geographic_views_by_month: Dict[str, List[GeographicMetrics]] = field(default_factory=dict)
     geographic_subscribers_by_month: Dict[str, List[GeographicMetrics]] = field(default_factory=dict)
@@ -54,4 +56,3 @@ class YouTubeMetrics:
             result['active_days_count'] = sum(1 for day in self.daily_metrics if day.has_activity)
         
         return result
-    

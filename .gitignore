@@ -90,3 +90,35 @@ site/
 # Package manager
 pip-log.txt
 pip-delete-this-directory.txt
+# Telegram bot
+telegram_bot/tokens/
+.env
+
+# Poetry
+dist/
+*.egg-info/
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Authentication
+token*.pickle
+flow*.pickle
+client_secrets.json
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.mypy_cache/

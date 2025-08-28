@@ -1,6 +1,6 @@
 """Google Sheets Exported wrapper for GeographicMetrics model."""
 
-from models import GeographicMetrics
+from domain import GeographicMetrics
 from typing import List
 from ..base import Report
 

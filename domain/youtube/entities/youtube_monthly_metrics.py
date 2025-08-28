@@ -1,19 +1,19 @@
-"""Monthly aggregated metrics model."""
+"""YouTube monthly aggregated metrics model."""
 
 from typing import Dict, Any, List
 from dataclasses import dataclass, field
 
 
 @dataclass
-class MonthlyMetrics:
-    """Represents aggregated metrics for a single month."""
+class YouTubeMonthlyMetrics:
+    """Represents YouTube aggregated metrics for a single month."""
     
     month_key: str  # Month identifier in YYYY-MM format
     views: int = 0
     watch_time_minutes: int = 0
     subscribers_gained: int = 0
     subscribers_lost: int = 0
-    video_count: int = 0  # Would need to be tracked separately
+    video_count: int = 0  # Number of videos uploaded in the month
     advertiser_count: int = 0  # Would need manual input
     integrations: str = ''  # Would need manual input
     days_with_data: int = 0

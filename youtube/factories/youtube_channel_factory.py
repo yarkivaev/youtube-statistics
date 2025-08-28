@@ -1,8 +1,7 @@
 """YouTube API factory for Channel."""
 
 from typing import TYPE_CHECKING
-from models import Channel
-from models.factories.base import Factory
+from domain import Channel, Factory
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient

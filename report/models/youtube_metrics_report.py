@@ -1,6 +1,6 @@
 """Report wrapper for YouTubeMetrics model."""
 
-from models import YouTubeMetrics
+from domain import YouTubeMetrics
 from ..base import Report
 
 

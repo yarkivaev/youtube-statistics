@@ -1,9 +1,9 @@
 """Subscriber total fragment factory for creating subscriber total fragments."""
 
 from typing import List, Optional
-from models.factories.base import Factory, FactoryDecorator
+from domain import Factory, FactoryDecorator
 from ..spreadsheet_fragment import SpreadsheetFragment
-from models import Channel
+from domain import Channel
 
 
 class SubscriberTotalFragmentFactory(FactoryDecorator):

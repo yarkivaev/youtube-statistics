@@ -1,7 +1,7 @@
 """Geographic fragment factory for creating geographic data fragments."""
 
 from typing import List, Dict, Any
-from models.factories.base import Factory, FactoryDecorator
+from domain import Factory, FactoryDecorator
 from ..spreadsheet_fragment import SpreadsheetFragment
 
 

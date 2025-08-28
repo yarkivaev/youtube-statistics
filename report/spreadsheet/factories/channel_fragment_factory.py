@@ -1,9 +1,9 @@
 """Channel fragment factory for creating channel data fragments."""
 
 from typing import List
-from models.factories.base import Factory, FactoryDecorator
+from domain import Factory, FactoryDecorator
 from ..spreadsheet_fragment import SpreadsheetFragment
-from models import Channel
+from domain import Channel
 
 
 class ChannelFragmentFactory(FactoryDecorator):

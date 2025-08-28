@@ -1,7 +1,7 @@
 """Monthly metrics fragment factory for creating metrics data fragments."""
 
 from typing import List, Dict, Any
-from models.factories.base import Factory, FactoryDecorator
+from domain import Factory, FactoryDecorator
 from ..spreadsheet_fragment import SpreadsheetFragment
 from ..formatted_spreadsheet_fragment import FormattedSpreadsheetFragment, CellFormat, RangeFormat
 

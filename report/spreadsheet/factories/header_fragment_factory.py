@@ -1,7 +1,7 @@
 """Header fragment factory for creating spreadsheet header fragments."""
 
 from typing import List, Dict
-from models.factories.base import Factory, FactoryDecorator
+from domain import Factory, FactoryDecorator
 from ..spreadsheet_fragment import SpreadsheetFragment
 from ..formatted_spreadsheet_fragment import FormattedSpreadsheetFragment, CellFormat, RangeFormat
 

@@ -1,6 +1,6 @@
 """Generic factory wrapper for JSON export functionality."""
 
-from models.factories.base import Factory
+from domain import Factory
 from typing import Any, Type, Optional
 
 

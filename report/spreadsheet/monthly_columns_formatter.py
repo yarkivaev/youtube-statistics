@@ -1,8 +1,8 @@
 """Monthly columns formatter for analytics reports."""
 
-from models import YouTubeMetrics
+from domain import YouTubeMetrics
 from typing import Optional, List, Dict, Any
-from models.factories.base import Factory
+from domain import Factory
 from ..google_sheets_report import GoogleSheetsReport
 from .merged_spreadsheet_fragment import VerticalMergedSpreadsheetFragment
 from .spreadsheet_fragment import SpreadsheetFragment

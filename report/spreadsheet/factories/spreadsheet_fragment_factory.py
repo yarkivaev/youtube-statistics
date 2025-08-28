@@ -1,6 +1,6 @@
 """Spreadsheet fragment factory."""
 
-from models.factories.base import Factory
+from domain import Factory
 from ..spreadsheet_fragment import SpreadsheetFragment
 
 

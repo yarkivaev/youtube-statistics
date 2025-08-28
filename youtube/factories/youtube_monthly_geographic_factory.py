@@ -2,8 +2,7 @@
 
 from typing import TYPE_CHECKING, Dict, List
 from datetime import datetime, date, timedelta
-from models import GeographicMetrics
-from models.factories.base import Factory
+from domain import GeographicMetrics, Factory
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient

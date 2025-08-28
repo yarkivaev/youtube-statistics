@@ -1,6 +1,6 @@
 """Google Sheets Exported wrapper for DailyMetrics model."""
 
-from models import DailyMetrics
+from domain import DailyMetrics
 from typing import List
 from ..base import Report
 

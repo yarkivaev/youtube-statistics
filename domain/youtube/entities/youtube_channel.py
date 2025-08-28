@@ -1,10 +1,10 @@
-"""Channel domain entity."""
+"""YouTube channel domain entity."""
 
 from dataclasses import dataclass
 
 
 @dataclass
-class Channel:
+class YouTubeChannel:
     """Represents a YouTube channel with its core statistics."""
     
     video_count: int
@@ -30,8 +30,8 @@ class Channel:
         }
     
     @classmethod
-    def from_api_response(cls, stats: dict) -> 'Channel':
-        """Create Channel instance from YouTube API response."""
+    def from_api_response(cls, stats: dict) -> 'YouTubeChannel':
+        """Create YouTubeChannel instance from YouTube API response."""
         return cls(
             video_count=int(stats.get('videoCount', 0)),
             subscriber_count=int(stats.get('subscriberCount', 0)),

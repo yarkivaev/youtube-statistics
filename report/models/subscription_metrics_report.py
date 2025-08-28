@@ -1,6 +1,6 @@
 """Exported wrapper for SubscriptionMetrics model."""
 
-from models import SubscriptionMetrics
+from domain import SubscriptionMetrics
 from ..base import Report
 
 

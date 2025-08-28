@@ -1,6 +1,6 @@
 """Exported wrapper for RevenueMetrics model."""
 
-from models import RevenueMetrics
+from domain import RevenueMetrics
 from ..base import Report
 
 

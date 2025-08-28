@@ -1,6 +1,6 @@
 """Exported wrapper for GeographicMetrics model."""
 
-from models import GeographicMetrics
+from domain import GeographicMetrics
 from ..base import Report
 
 

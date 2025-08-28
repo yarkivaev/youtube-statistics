@@ -3,9 +3,7 @@
 from typing import TYPE_CHECKING, Optional
 from datetime import date, datetime
 from decimal import Decimal
-from models.factories.base import Factory
-from models import RevenueMetrics, DateRange
-from models.daily_metrics import DailyMetrics
+from domain import Factory, RevenueMetrics, DateRange, DailyMetrics
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient

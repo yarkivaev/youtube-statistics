@@ -1,9 +1,7 @@
 """YouTube API factory for ViewsBreakdown."""
 
 from typing import TYPE_CHECKING, Optional
-from models.factories.base import Factory
-from models import ViewsBreakdown
-from models.daily_metrics import ContentType
+from domain import Factory, ViewsBreakdown, ContentType
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient

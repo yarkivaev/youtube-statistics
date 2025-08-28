@@ -1,6 +1,6 @@
 """Exported wrapper for DateRange model."""
 
-from models import DateRange
+from domain import DateRange
 from ..base import Report
 
 

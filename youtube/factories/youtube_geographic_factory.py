@@ -1,8 +1,7 @@
 """YouTube API factory for GeographicMetrics."""
 
 from typing import TYPE_CHECKING, List
-from models.factories.base import Factory
-from models import GeographicMetrics
+from domain import Factory, GeographicMetrics
 
 if TYPE_CHECKING:
     from youtube.youtube_api import YouTubeAPIClient
@@ -49,12 +48,19 @@ class YouTubeGeographicFactory(Factory):
                     endDate=end_date,
                     metrics='views,estimatedMinutesWatched',
                     dimensions='country',
-                    sort='-views',
-                    maxResults=9
+                    sort='-views'
+                    # Removed maxResults to get all countries
                 )
                 response = self.api_client.execute_request(request)
                 
+                # Debug the raw response
+                print(f"Raw API response: {response}")
+                
                 if response and response.get('rows'):
+                    print(f"Geographic views API returned {len(response['rows'])} countries")
+                    print(f"First few rows: {response['rows'][:5] if len(response['rows']) > 5 else response['rows']}")
+                    
+                    # Process ALL countries returned by the API
                     for row in response['rows']:
                         geo = GeographicMetrics(
                             country_code=row[0],
@@ -63,6 +69,14 @@ class YouTubeGeographicFactory(Factory):
                             subscribers_gained=0  # Default value for views fetch
                         )
                         geo_metrics.append(geo)
+                        print(f"Added country {row[0]} with {row[1]} views")
+                    
+                    print(f"Created {len(geo_metrics)} GeographicMetrics objects")
+                    # Log total views for debugging
+                    total_views = sum(g.views for g in geo_metrics)
+                    print(f"Total views from all countries: {total_views}")
+                else:
+                    print("No geographic data returned by API")
                         
             elif fetch_type == "subscribers":
                 request = youtube_analytics.reports().query(
@@ -71,12 +85,14 @@ class YouTubeGeographicFactory(Factory):
                     endDate=end_date,
                     metrics='subscribersGained',
                     dimensions='country',
-                    sort='-subscribersGained',
-                    maxResults=5
+                    sort='-subscribersGained'
+                    # Removed maxResults to get all countries
                 )
                 response = self.api_client.execute_request(request)
                 
                 if response and response.get('rows'):
+                    print(f"Geographic subscribers API returned {len(response['rows'])} countries")
+                    # Process ALL countries returned by the API
                     for row in response['rows']:
                         geo = GeographicMetrics(
                             country_code=row[0],
@@ -85,6 +101,7 @@ class YouTubeGeographicFactory(Factory):
                             subscribers_gained=row[1]
                         )
                         geo_metrics.append(geo)
+                    print(f"Created {len(geo_metrics)} GeographicMetrics objects for subscribers")
                         
         except Exception as e:
             print(f"Error fetching geographic {fetch_type}: {e}")

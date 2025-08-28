@@ -1,6 +1,6 @@
 """Google Sheets Report wrapper for YouTubeMetrics model."""
 
-from models import YouTubeMetrics
+from domain import YouTubeMetrics
 from typing import Optional, List
 from ..google_sheets_report import GoogleSheetsReport
 
@@ -45,7 +45,7 @@ class YoutubeMetricsSheetsReport(GoogleSheetsReport):
     def _initialize_export_components(self):
         """Initialize all export components in the constructor."""
         # Import necessary components
-        from models.factories import MonthlyMetricsFactory
+        from domain import MonthlyMetricsFactory
         from .factories import (
             SpreadsheetFragmentFactory,
             HeaderFragmentFactory,
