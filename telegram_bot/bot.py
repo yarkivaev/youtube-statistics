@@ -35,7 +35,6 @@ async def start_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         "🔧 *Commands:*\n"
         "/auth - Connect your Google account\n"
         "/stats - Get your channel statistics\n"
-        "/stats @channel - Get statistics for any channel\n"
         "/help - Show this help message\n\n"
         "To get started, use /auth to connect your Google account."
     )
@@ -49,17 +48,13 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
         "/start - Welcome message\n"
         "/auth - Authenticate with Google\n"
         "/code - Complete authentication\n"
-        "/stats - Get channel statistics\n"
-        "/month - Quick month selector\n"
+        "/stats - Get your channel statistics\n"
         "/reset - Clear authentication\n"
         "/help - Show this help\n\n"
         "*Examples:*\n"
-        "`/stats` - Your channel, last 30 days\n"
-        "`/stats @mkbhd` - Stats for MKBHD\n"
-        "`/stats 2024-01` - Your channel, January 2024\n"
-        "`/stats @mkbhd 2024-02` - MKBHD, February 2024\n"
-        "`/stats LinusTechTips` - Search by name\n"
-        "`/stats UCXuqSBlHAE6Xw-yeJA0Tunw` - By channel ID\n\n"
+        "`/stats` - Last 30 days\n"
+        "`/stats 2024-01` - January 2024\n"
+        "`/stats 2024-02` - February 2024\n\n"
         "*Month Format:* YYYY-MM (e.g., 2024-01 for January 2024)"
     )
     await update.message.reply_text(help_text, parse_mode='Markdown')
@@ -141,9 +136,7 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     
     Usage:
         /stats - Your channel, last 30 days
-        /stats @channel - Channel stats, last 30 days
         /stats 2024-01 - Your channel, January 2024
-        /stats @channel 2024-01 - Channel stats for January 2024
     """
     user_id = update.effective_user.id
     
@@ -158,8 +151,7 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
     # Send loading message
     loading_msg = await update.message.reply_text("🔄 Fetching statistics...")
     
-    # Parse arguments
-    channel_query = None
+    # Parse arguments for month only
     month_query = None
     
     if context.args:
@@ -167,18 +159,11 @@ async def stats_command(update: Update, context: ContextTypes.DEFAULT_TYPE) -> N
         for arg in context.args:
             if len(arg) == 7 and arg[4] == '-' and arg[:4].isdigit() and arg[5:].isdigit():
                 month_query = arg
-            elif not channel_query:  # First non-month arg is channel
-                channel_query = arg
-        
-        # If channel_query wasn't set but we have args that aren't months, join them
-        if not channel_query and context.args:
-            non_month_args = [arg for arg in context.args if arg != month_query]
-            if non_month_args:
-                channel_query = ' '.join(non_month_args)
+                break  # Take the first valid month format
     
-    # Get statistics
+    # Get statistics (always for user's own channel)
     try:
-        stats_text = get_channel_statistics(user_id, channel_query, month_query)
+        stats_text = get_channel_statistics(user_id, None, month_query)
         
         # Edit the loading message with results
         await loading_msg.edit_text(stats_text, parse_mode='Markdown')

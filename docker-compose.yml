@@ -1,0 +1,31 @@
+version: '3.8'
+
+services:
+  telegram-bot:
+    build: .
+    container_name: youtube-stats-bot
+    restart: unless-stopped
+    environment:
+      # Telegram Bot Token - REQUIRED
+      - TELEGRAM_BOT_TOKEN=${TELEGRAM_BOT_TOKEN}
+      # Optional: Set timezone
+      - TZ=Europe/Moscow
+    volumes:
+      # Persist OAuth tokens between container restarts
+      - ./telegram_bot/tokens:/app/telegram_bot/tokens
+      # Mount client_secrets.json from host
+      - ./client_secrets.json:/app/client_secrets.json:ro
+      # Optional: Mount custom .env file
+      - ./.env:/app/.env:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Health check
+    healthcheck:
+      test: ["CMD", "pgrep", "-f", "telegram-bot"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s

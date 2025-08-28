@@ -1,0 +1,70 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+.venv
+.env.local
+*.egg-info/
+dist/
+build/
+
+# Poetry
+poetry.lock.bak
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Git
+.git/
+.gitignore
+
+# Docker
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+# Documentation
+*.md
+docs/
+LICENSE
+
+# Test files
+tests/
+test_*.py
+*_test.py
+.pytest_cache/
+.coverage
+
+# Logs
+*.log
+logs/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# User data (should be mounted as volumes)
+tokens/
+token*.pickle
+auth_state*.json
+youtube_analytics.txt
+bot_debug.log
+
+# Notebooks
+*.ipynb
+.ipynb_checkpoints/
+
+# Reports
+reports/
+*.xlsx
+*.csv

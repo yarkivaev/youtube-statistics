@@ -14,70 +14,38 @@ from domain import DateRange
 from telegram_bot.auth import get_credentials, get_youtube_services
 
 
-def resolve_channel(youtube_data_service, channel_query: str) -> tuple[Optional[str], str]:
-    """Resolve channel query to channel ID and name.
+def get_own_channel(youtube_data_service) -> tuple[Optional[str], str]:
+    """Get authenticated user's channel ID and name.
     
     Returns:
         Tuple of (channel_id, channel_name)
     """
-    if not channel_query:
-        # Get authenticated user's channel
-        try:
-            request = youtube_data_service.channels().list(
-                part='snippet',
-                mine=True
-            )
-            response = request.execute()
-            if response['items']:
-                channel = response['items'][0]
-                return channel['id'], channel['snippet']['title']
-        except:
-            return None, "Unknown"
-    
-    # Handle @username
-    if channel_query.startswith('@'):
-        try:
-            request = youtube_data_service.channels().list(
-                part='snippet',
-                forHandle=channel_query[1:]
-            )
-            response = request.execute()
-            if response['items']:
-                channel = response['items'][0]
-                return channel['id'], channel['snippet']['title']
-        except:
-            pass
-    
-    # Handle channel ID (starts with UC and is 24 chars)
-    if channel_query.startswith('UC') and len(channel_query) == 24:
-        try:
-            request = youtube_data_service.channels().list(
-                part='snippet',
-                id=channel_query
-            )
-            response = request.execute()
-            if response['items']:
-                channel = response['items'][0]
-                return channel_query, channel['snippet']['title']
-        except:
-            pass
-    
-    # Search by channel name
     try:
-        request = youtube_data_service.search().list(
+        request = youtube_data_service.channels().list(
             part='snippet',
-            q=channel_query,
-            type='channel',
-            maxResults=1
+            mine=True
         )
         response = request.execute()
         if response['items']:
-            item = response['items'][0]
-            return item['snippet']['channelId'], item['snippet']['channelTitle']
-    except:
-        pass
+            channel = response['items'][0]
+            return channel['id'], channel['snippet']['title']
+    except Exception as e:
+        print(f"Error getting own channel: {e}")
     
-    return None, channel_query
+    return None, "Unknown"
+
+
+# Keep old function name for compatibility but simplified
+def resolve_channel(youtube_data_service, channel_query: str) -> tuple[Optional[str], str]:
+    """Resolve channel - always returns user's own channel.
+    
+    Args:
+        channel_query: Ignored, kept for compatibility
+        
+    Returns:
+        Tuple of (channel_id, channel_name)
+    """
+    return get_own_channel(youtube_data_service)
 
 
 def get_video_count_for_period(youtube_data, channel_id: str, start_date, end_date) -> int:
@@ -132,7 +100,7 @@ def get_channel_statistics(user_id: int, channel_query: Optional[str] = None, mo
     
     Args:
         user_id: Telegram user ID
-        channel_query: Optional channel identifier (@handle, name, or ID)
+        channel_query: Not used anymore, kept for compatibility
         month_query: Optional month in YYYY-MM format
         
     Returns:
@@ -144,10 +112,10 @@ def get_channel_statistics(user_id: int, channel_query: Optional[str] = None, mo
         if not youtube_analytics or not youtube_data:
             return "❌ Authentication required. Please use /auth command first."
         
-        # Resolve channel
-        channel_id, channel_name = resolve_channel(youtube_data, channel_query)
+        # Always get user's own channel
+        channel_id, channel_name = resolve_channel(youtube_data, None)
         if not channel_id:
-            return f"❌ Channel not found: {channel_query or 'your channel'}"
+            return "❌ Could not find your channel. Please check your authentication."
         
         # Create API client wrapper
         api_client = YouTubeAPIClient()
@@ -192,22 +160,12 @@ def get_channel_statistics(user_id: int, channel_query: Optional[str] = None, mo
         # Get video count for the period
         videos_uploaded = get_video_count_for_period(youtube_data, channel_id, start_date, end_date)
         
-        # Get metrics using factory
+        # Get metrics using factory (always include revenue for own channel)
         factory = YouTubeMetricsFactory(
             api_client=api_client,
             period=period,
-            skip_revenue=(channel_query is not None)  # Skip revenue for other channels
+            skip_revenue=False  # Always show revenue for own channel
         )
-        
-        # Set channel ID if looking at another channel
-        if channel_query:
-            # Modify the API calls to use the specific channel ID
-            # This is a simplified approach - in production you'd handle this better
-            original_execute = youtube_analytics.reports().query().execute
-            def modified_execute():
-                # This is a workaround - ideally modify the factory
-                return original_execute()
-            youtube_analytics.reports().query().execute = modified_execute
         
         # Fetch metrics
         metrics = factory.create()
@@ -269,8 +227,8 @@ def get_channel_statistics(user_id: int, channel_query: Optional[str] = None, mo
                 avg_daily_views = sum(d.views for d in metrics.daily_metrics) / active_days
                 response += f"📅 *Avg Daily Views:* {avg_daily_views:,.0f}\n"
         
-        # Revenue (only for own channel)
-        if not channel_query and metrics.revenue_metrics and metrics.revenue_metrics.has_revenue:
+        # Revenue
+        if metrics.revenue_metrics and metrics.revenue_metrics.has_revenue:
             response += f"\n💰 *Revenue:* ${metrics.revenue_metrics.total_revenue:.2f}\n"
             response += f"  • Ad Revenue: ${metrics.revenue_metrics.ad_revenue:.2f}\n"
             if metrics.revenue_metrics.red_partner_revenue > 0:
